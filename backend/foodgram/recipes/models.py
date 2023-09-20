@@ -1,5 +1,9 @@
+import re
+
 from django.contrib.auth.models import AbstractUser
+from django.core.exceptions import ValidationError
 from django.db import models
+from django.db.models import F
 
 
 class User(AbstractUser):
@@ -22,7 +26,7 @@ class User(AbstractUser):
         return self.role == User.ADMIN
 
     class Meta:
-        ordering = ['username']
+        ordering =  ('username',)
         verbose_name_plural = 'Пользователи'
 
     def __str__(self):
@@ -45,13 +49,18 @@ class Subscription(models.Model):
     )
 
     class Meta:
-        unique_together = ('user', 'author')
+        constraints = [
+            models.CheckConstraint(
+                check=~(F('user') == F('author')),
+                name='user_cannot_subscribe_to_self'
+            )
+        ]
         verbose_name_plural = 'Подписки'
 
 
 class Ingredient(models.Model):
     """Модель для инградиентов."""
-    name = models.CharField(max_length=100, verbose_name='Название')
+    name = models.CharField('Название', max_length=100)
     measurement_unit = models.CharField(max_length=30, verbose_name='Ед. изм.')
 
     class Meta:
@@ -69,6 +78,10 @@ class RecipeIngredient(models.Model):
     )
     amount = models.PositiveSmallIntegerField()
 
+    def clean(self):
+        if self.amount <= 0:
+            raise ValidationError('Количество должно быть больше нуля')
+
     def __str__(self):
         return self.ingredient.name
 
@@ -81,6 +94,10 @@ class Tag(models.Model):
 
     class Meta:
         verbose_name_plural = 'Теги'
+
+    def clean(self):
+        if not re.match('^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$', self.color):
+            raise ValidationError('Невалидный хекс-код цвета')
 
     def __str__(self):
         return self.name
@@ -124,8 +141,16 @@ class Recipe(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
-        ordering = ['-created_at']
+        ordering = ('-created_at',)
         verbose_name_plural = 'Рецепты'
+
+    def clean(self):
+        if self.cooking_time <= 0:
+            raise ValidationError('Время приготовления должно быть больше нуля')
+        if self.cooking_time > 1440:
+            raise ValidationError(
+                'Время приготовления не может превышать 24 часа'
+            )
 
     def __str__(self):
         return self.name

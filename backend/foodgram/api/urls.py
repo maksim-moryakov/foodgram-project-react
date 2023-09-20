@@ -1,10 +1,11 @@
-from api.views import (AuthTokenLogoutView, AuthTokenView, IngredientViewSet,
-                       RecipeViewSet, TagViewSet, UserViewSet)
 from django.urls import include, path
 from rest_framework import routers
 
+from api.views import (AuthTokenLogoutView, AuthTokenView, IngredientViewSet,
+                       RecipeViewSet, TagViewSet, UserViewSet)
+
 router = routers.SimpleRouter()
-router.register(r'users', UserViewSet, basename='user')
+router.register('users', UserViewSet, basename='user')
 router.register(r'tags', TagViewSet, basename='tag')
 router.register(r'ingredients', IngredientViewSet, basename='ingredient')
 router.register(r'recipes', RecipeViewSet, basename='recipe')

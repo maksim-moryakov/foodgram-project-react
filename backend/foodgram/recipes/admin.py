@@ -1,6 +1,10 @@
 from django.contrib import admin
 from django.contrib.auth.models import Group
-from recipes.models import Favorite, Ingredient, Recipe, Tag, User
+from django.db import models
+from django.forms import TextInput
+
+from recipes.models import (Favorite, Ingredient, Recipe, RecipeIngredient,
+                            Tag, User)
 
 
 class UserAdmin(admin.ModelAdmin):
@@ -32,8 +36,15 @@ class IngredientAdmin(admin.ModelAdmin):
     search_fields = ('^name',)
 
 
+class TagAdmin(admin.ModelAdmin):
+    formfield_overrides = {
+        models.CharField: {'widget': TextInput(attrs={'type': 'color'})},
+    }
+
+
 admin.site.unregister(Group)
 admin.site.register(User, UserAdmin)
-admin.site.register(Tag)
+admin.site.register(Tag, TagAdmin)
 admin.site.register(Recipe, RecipeAdmin)
+admin.site.register(RecipeIngredient)
 admin.site.register(Ingredient, IngredientAdmin)
