@@ -9,4 +9,4 @@ RUN pip install --upgrade pip \
 
 COPY foodgram/ ./
 
-CMD ["gunicorn", "--bind", "0.0.0.0:9000", "foodgram.wsgi:application"]
+CMD ["gunicorn", "--bind", "0.0.0.0:8000", "foodgram.wsgi:application"]
