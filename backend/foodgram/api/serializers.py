@@ -6,7 +6,6 @@ from recipes.models import (Favorite, Ingredient, Recipe, RecipeIngredient,
                             ShoppingCart, Subscription, Tag, User)
 from rest_framework import serializers
 from rest_framework.validators import UniqueValidator
-
 from api.validators import validate_username
 
 
@@ -184,9 +183,9 @@ class RecipeWriteSerializer(serializers.ModelSerializer):
     image = Base64ImageField()
 
     def update(self, instance, validated_data):
-        with transaction.atomic(): # использование транзакции
-            tags = validated_data.pop('tags', None) 
-            ingredients = validated_data.pop('ingredients', None) 
+        with transaction.atomic():
+            tags = validated_data.pop('tags', None)
+            ingredients = validated_data.pop('ingredients', None)
             for key, value in validated_data.items():
                 setattr(instance, key, value)
             if tags is not None:

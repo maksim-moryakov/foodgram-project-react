@@ -26,7 +26,7 @@ class User(AbstractUser):
         return self.role == User.ADMIN
 
     class Meta:
-        ordering =  ('username',)
+        ordering = ('username',)
         verbose_name_plural = 'Пользователи'
 
     def __str__(self):
@@ -146,7 +146,7 @@ class Recipe(models.Model):
 
     def clean(self):
         if self.cooking_time <= 0:
-            raise ValidationError('Время приготовления должно быть больше нуля')
+            raise ValidationError('Время приготовления должно быть больше 0')
         if self.cooking_time > 1440:
             raise ValidationError(
                 'Время приготовления не может превышать 24 часа'
