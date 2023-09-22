@@ -1,13 +1,9 @@
 import os
 
-# Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
+SECRET_KEY = os.getenv('SECRET_KEY', default='token')
 
-# SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = '7kv(becal9%#nn7+rkyviyn8#y$rv9mj%_h5ln_424_3_6s!sy'
-
-# SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
 ALLOWED_HOSTS = os.getenv('ALLOWED_HOSTS', '127.0.0.1').split(', ')
