@@ -2,8 +2,7 @@ from django.contrib import admin
 from django.contrib.auth.models import Group
 from django.db import models
 from django.forms import TextInput
-from recipes.models import (Favorite, Ingredient, Recipe, RecipeIngredient,
-                            Tag, User)
+from recipes.models import (Favorite, Ingredient, Recipe, Tag, User)
 
 
 @admin.register(User)
