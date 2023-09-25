@@ -1,12 +1,12 @@
+from api.validators import validate_username
 from django.core.exceptions import ObjectDoesNotExist
 from django.db import transaction
 from drf_extra_fields.fields import Base64ImageField
 from foodgram import settings
-from recipes.models import (Favorite, Ingredient, Recipe, RecipeIngredient,
+from recipes.models import (Favorite, Ingredient, Recipe, RecipeIngredients,
                             ShoppingCart, Subscription, Tag, User)
 from rest_framework import serializers
 from rest_framework.validators import UniqueValidator
-from api.validators import validate_cooking_time, validate_username
 
 
 class UserSerializer(serializers.ModelSerializer):
@@ -141,7 +141,7 @@ class RecipeIngredientSerializer(serializers.ModelSerializer):
     )
 
     class Meta:
-        model = RecipeIngredient
+        model = RecipeIngredients
         fields = ['id', 'name', 'measurement_unit', 'amount']
 
     def get_ingredient(self, obj):
@@ -166,7 +166,7 @@ class IngredientWriteField(serializers.RelatedField):
             ingredient = Ingredient.objects.get(id=data['id'])
         except ObjectDoesNotExist:
             raise serializers.ValidationError({'id': 'doesnt exists'})
-        return RecipeIngredient.objects.create(
+        return RecipeIngredients.objects.create(
             ingredient=ingredient,
             amount=data['amount'],
         )
@@ -181,27 +181,22 @@ class RecipeWriteSerializer(serializers.ModelSerializer):
     )
     ingredients = IngredientWriteField(
         many=True,
-        queryset=RecipeIngredient.objects.all(),
+        queryset=RecipeIngredients.objects.all(),
     )
     author = UserSerializer(required=False)
     image = Base64ImageField()
-    cooking_time = serializers.IntegerField(
-        validators=[validate_cooking_time]
-    )
 
     @transaction.atomic
-    def update(self, instance, validated_data):
-        with transaction.atomic():
-            tags = validated_data.pop('tags', None)
-            ingredients = validated_data.pop('ingredients', None)
-            for key, value in validated_data.items():
-                setattr(instance, key, value)
-            if tags is not None:
-                instance.tags.set(tags)
-            if ingredients is not None:
-                instance.ingredients.set(ingredients)
-            instance.save()
-        return instance
+    def create(self, validated_data):
+        tags = validated_data.pop('tags')
+        ingredients = validated_data.pop('ingredients')
+        recipe = Recipe.objects.create(
+            author=self.context['request'].user,
+            **validated_data,
+        )
+        recipe.tags.set(tags)
+        recipe.ingredients.set(ingredients)
+        return recipe
 
     def to_representation(self, instance):
         return RecipeGetSerializer(

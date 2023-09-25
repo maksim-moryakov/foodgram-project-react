@@ -1,11 +1,17 @@
 from csv import writer
 
+from api.filters import RecipeQueryFilter
+from api.permissions import IsAuthenticatedForDetail, IsAuthenticatedOrReadOnly
+from api.serializers import (FavoriteShoppingCartSerializer,
+                             IngredientGetSerializer, PasswordSerializer,
+                             RecipeGetSerializer, RecipeWriteSerializer,
+                             SubscribeSerializer, TagSerializer,
+                             UserSerializer)
 from django.core.exceptions import ObjectDoesNotExist
 from django.db import IntegrityError
 from django.db.models import Count, Sum
 from django.http import HttpResponse
 from django.shortcuts import get_object_or_404
-from django_filters.rest_framework import DjangoFilterBackend
 from djoser.views import TokenCreateView, TokenDestroyView
 from recipes.models import (Favorite, Ingredient, Recipe, ShoppingCart,
                             Subscription, Tag, User)
@@ -14,21 +20,13 @@ from rest_framework.decorators import action
 from rest_framework.mixins import ListModelMixin, RetrieveModelMixin
 from rest_framework.response import Response
 from rest_framework.viewsets import GenericViewSet
-from api.filters import RecipeFilter
-from api.permissions import (AuthenticatedOrReadOnlyPermission,
-                             IsOwnerOrReadOnlyPermission)
-from api.serializers import (FavoriteShoppingCartSerializer,
-                             IngredientGetSerializer, PasswordSerializer,
-                             RecipeGetSerializer, RecipeWriteSerializer,
-                             SubscribeSerializer, TagSerializer,
-                             UserSerializer)
 
 
 class UserViewSet(viewsets.ModelViewSet):
     """ViewSet для доступа к пользователям."""
     queryset = User.objects.all()
     serializer_class = UserSerializer
-    permission_classes = [IsOwnerOrReadOnlyPermission]
+    permission_classes = [IsAuthenticatedForDetail]
     lookup_field = 'id'
 
     def create(self, request, *args, **kwargs):
@@ -222,9 +220,8 @@ class IngredientViewSet(ListRetrieveViewSet):
 class RecipeViewSet(viewsets.ModelViewSet):
     """ViewSet для рецептов."""
     queryset = Recipe.objects.all()
-    filter_backends = [DjangoFilterBackend]
-    filterset_class = RecipeFilter
-    permission_classes = [AuthenticatedOrReadOnlyPermission]
+    filter_backends = [RecipeQueryFilter]
+    permission_classes = [IsAuthenticatedOrReadOnly]
     lookup_field = 'id'
 
     def get_serializer_class(self):
