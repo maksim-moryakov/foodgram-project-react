@@ -45,8 +45,4 @@ class TagAdmin(admin.ModelAdmin):
 
 
 admin.site.unregister(Group)
-admin.site.register(User, UserAdmin)
 admin.site.register(Tag, TagAdmin)
-admin.site.register(Recipe, RecipeAdmin)
-admin.site.register(RecipeIngredient)
-admin.site.register(Ingredient, IngredientAdmin)
