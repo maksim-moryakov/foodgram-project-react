@@ -20,7 +20,7 @@ services:
       - media_vol:/usr/share/nginx/html/media/
       - ../docs/:/usr/share/nginx/html/api/docs/
   app:
-    image: hrapovd/foodgram_app:${VERSION}
+    image: maksimmoryakov/foodgram_app:${VERSION}
     depends_on:
       - db 
     restart: always
