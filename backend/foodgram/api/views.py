@@ -5,6 +5,7 @@ from django.db import IntegrityError
 from django.db.models import Count, Sum
 from django.http import HttpResponse
 from django.shortcuts import get_object_or_404
+from django_filters.rest_framework import DjangoFilterBackend
 from djoser.views import TokenCreateView, TokenDestroyView
 from recipes.models import (Favorite, Ingredient, Recipe, ShoppingCart,
                             Subscription, Tag, User)
@@ -13,6 +14,7 @@ from rest_framework.decorators import action
 from rest_framework.mixins import ListModelMixin, RetrieveModelMixin
 from rest_framework.response import Response
 from rest_framework.viewsets import GenericViewSet
+from api.filters import RecipeFilter
 from api.permissions import (AuthenticatedOrReadOnlyPermission,
                              IsOwnerOrReadOnlyPermission)
 from api.serializers import (FavoriteShoppingCartSerializer,
@@ -147,7 +149,6 @@ class UserViewSet(viewsets.ModelViewSet):
     def subscriptions(self, request):
         """Возвращает список подписки"""
         user = get_object_or_404(User, username=request.user)
-        recipes_limit = request.query_params.get('recipes_limit')
 
         queryset = (
             User.objects.filter(
@@ -157,9 +158,6 @@ class UserViewSet(viewsets.ModelViewSet):
             )
         )
 
-        if recipes_limit is not None:
-            queryset = queryset[:int(recipes_limit)]
-
         page = self.paginate_queryset(queryset)
         if page is not None:
             serializer = SubscribeSerializer(
@@ -167,7 +165,8 @@ class UserViewSet(viewsets.ModelViewSet):
                 many=True,
                 context={'request': request}
             )
-            return self.get_paginated_response(serializer.data)
+            data = serializer.data
+            return self.get_paginated_response(data)
 
         serializer = self.get_serializer(queryset, many=True)
         return Response(serializer.data)
@@ -223,60 +222,25 @@ class IngredientViewSet(ListRetrieveViewSet):
 class RecipeViewSet(viewsets.ModelViewSet):
     """ViewSet для рецептов."""
     queryset = Recipe.objects.all()
+    filter_backends = [DjangoFilterBackend]
+    filterset_class = RecipeFilter
     permission_classes = [AuthenticatedOrReadOnlyPermission]
     lookup_field = 'id'
 
     def get_serializer_class(self):
         """Выбор сериализатора в зависимости от метода"""
         if (
-            self.action == 'create'
-            or self.action == 'update'
-            or self.action == 'partial_update'
+            self.action == 'list'
+            or self.action == 'retrieve'
         ):
-            return RecipeWriteSerializer
-        return RecipeGetSerializer
+            return RecipeGetSerializer
+        return RecipeWriteSerializer
 
-    def list(self, request, *args, **kwargs):
-        """Возвращает список рецептов с фильтрацией по параметрам"""
-        tags = request.query_params.getlist('tags')
-        author = request.query_params.get('author')
-        if request.user.is_authenticated:
-            user = User.objects.get(username=request.user)
-        else:
-            user = None
-        favor = request.query_params.get('is_favorited')
-        shop_cart = request.query_params.get('is_in_shopping_cart')
-
-        if user and favor == '1':
-            queryset = (
-                Recipe.objects
-                .filter(id__in=Favorite.objects
-                        .filter(user=user).values('recipe__id'))
-                .filter(tags__slug__in=tags)
-            )
-        elif user and shop_cart == '1':
-            queryset = (
-                Recipe.objects
-                .filter(id__in=ShoppingCart.objects
-                        .filter(user=user).values('recipe__id'))
-            )
-        else:
-            if author:
-                queryset = self.filter_queryset(self.get_queryset()).filter(
-                    tags__slug__in=tags, author=User.objects.get(id=author),
-                )
-            else:
-                queryset = self.filter_queryset(self.get_queryset()).filter(
-                    tags__slug__in=tags,
-                )
-
-        page = self.paginate_queryset(queryset)
-        if page is not None:
-            serializer = self.get_serializer(page, many=True)
-            return self.get_paginated_response(serializer.data)
-
-        serializer = self.get_serializer(queryset, many=True)
-        return Response(serializer.data)
+    def filter_queryset(self, queryset):
+        """Выбор фильтра в зависимости от метода"""
+        if self.action == 'list':
+            return super().filter_queryset(queryset)
+        return queryset
 
     @action(
         detail=True,

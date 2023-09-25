@@ -6,7 +6,7 @@ from recipes.models import (Favorite, Ingredient, Recipe, RecipeIngredient,
                             ShoppingCart, Subscription, Tag, User)
 from rest_framework import serializers
 from rest_framework.validators import UniqueValidator
-from api.validators import validate_username
+from api.validators import validate_cooking_time, validate_username
 
 
 class UserSerializer(serializers.ModelSerializer):
@@ -52,12 +52,14 @@ class UserSerializer(serializers.ModelSerializer):
                     .exists())
         return False
 
+    @transaction.atomic
     def create(self, validated_data):
         user = super().create(validated_data)
         user.set_password(validated_data['password'])
         user.save()
         return user
 
+    @transaction.atomic
     def update(self, instance, validated_data):
         user = super().update(instance, validated_data)
         try:
@@ -81,12 +83,14 @@ class PasswordSerializer(serializers.Serializer):
         required=True
     )
 
+    @transaction.atomic
     def create(self, validated_data):
         user = self.instance
         user.set_password(validated_data['password'])
         user.save()
         return user
 
+    @transaction.atomic
     def update(self, instance, validated_data):
         user = instance
         user.set_password(validated_data['password'])
@@ -181,7 +185,11 @@ class RecipeWriteSerializer(serializers.ModelSerializer):
     )
     author = UserSerializer(required=False)
     image = Base64ImageField()
+    cooking_time = serializers.IntegerField(
+        validators=[validate_cooking_time]
+    )
 
+    @transaction.atomic
     def update(self, instance, validated_data):
         with transaction.atomic():
             tags = validated_data.pop('tags', None)
@@ -252,10 +260,10 @@ class FavoriteShoppingCartSerializer(serializers.BaseSerializer):
     """Сериализатор для избранного, списка покупок"""
     def to_representation(self, instance):
         return {
-            "id": instance.id,
-            "name": instance.name,
-            "image": instance.image,
-            "cooking_time": instance.cooking_time
+            'id': instance.id,
+            'name': instance.name,
+            'image': f'{settings.MEDIA_URL}{instance.image}',
+            'cooking_time': instance.cooking_time
         }
 
 
@@ -274,8 +282,12 @@ class SubscribeSerializer(UserSerializer):
 
     def get_recipes(self, obj):
         """Получение рецептов"""
+        limit = self.context['request'].query_params.get('recipes_limit')
+        query = Recipe.objects.filter(author=obj)
+        if limit is not None:
+            query = query[:int(limit)]
         recipes = FavoriteShoppingCartSerializer(
-            Recipe.objects.filter(author=obj),
+            query,
             many=True,
         )
         return recipes.data

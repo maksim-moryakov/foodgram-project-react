@@ -6,6 +6,7 @@ from recipes.models import (Favorite, Ingredient, Recipe, RecipeIngredient,
                             Tag, User)
 
 
+@admin.register(User)
 class UserAdmin(admin.ModelAdmin):
     """Класс представления модели пользователей."""
     list_display = (
@@ -15,6 +16,7 @@ class UserAdmin(admin.ModelAdmin):
     search_fields = ('email', 'first_name')
 
 
+@admin.register(Recipe)
 class RecipeAdmin(admin.ModelAdmin):
     """Класс представления модели рецептов"""
     list_display = ('name', 'author')
@@ -29,6 +31,7 @@ class RecipeAdmin(admin.ModelAdmin):
         return Favorite.objects.filter(recipe=obj).count()
 
 
+@admin.register(Ingredient)
 class IngredientAdmin(admin.ModelAdmin):
     """Класс представление инградиентов."""
     list_display = ('name', 'measurement_unit')
