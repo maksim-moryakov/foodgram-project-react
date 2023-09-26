@@ -59,7 +59,7 @@ jobs:
           key: ${{ secrets.SSH_KEY }}
           passphrase: ${{ secrets.SSH_PASSPHRASE }}
           script: |
-            cd infra
+            cd foodgram/infra/
             sudo docker-compose down
             sudo docker pull maksimmoryakov/foodgram_app:1.0
             touch .env
