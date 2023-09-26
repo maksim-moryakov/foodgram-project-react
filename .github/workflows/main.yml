@@ -1,10 +1,5 @@
 name: Main Foodgram
 
-on:
-  push:
-    branches:
-    - dev_2
-
 permissions:
   contents: read
 
@@ -14,11 +9,15 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-
-    - name: Set up Python 3.8
+    - uses: actions/checkout@v2
+    - name: Packages update
+      run: |
+        sudo apt update && sudo apt dist-upgrade -y
+        sudo apt install curl
+    - name: Set up Python 3.7
       uses: actions/setup-python@v2
       with:
-        python-version: "3.8"
+        python-version: "3.7"
     - name: Install dependencies
       run: |
         python3 -m pip install --upgrade pip
@@ -27,24 +26,30 @@ jobs:
     - name: Lint with flake8
       run: |
         python3 -m flake8
-
+    - name: Build and upload docker image
+      run: |
+        cd backend
+        echo ${{ secrets.DOCKER_PASS }} | docker login -u ${{ secrets.DOCKER_USER }} --password-stdin
+        docker build . -t hrapovd/foodgram_app:1.0
+        docker push hrapovd/foodgram_app:1.0
     - name: Deploy
       uses: appleboy/ssh-action@master
       with:
-        host: ${{ secrets.SSH_HOST }}
-        username: ${{ secrets.SSH_USER }}
+        host: ${{ secrets.HOST }}
+        username: ${{ secrets.USER }}
         key: ${{ secrets.SSH_KEY }}
+        passphrase: ${{ secrets.SSH_PASSPHRASE }}
         script: |
           set -x
           if [ -d foodgram-project-react ]; then
             cd foodgram-project-react/infra
             sudo docker-compose down
-            sudo docker rmi maksimmoryakov/foodgram_app:1.0
+            sudo docker rmi hrapovd/foodgram_app:1.0
             sudo docker system prune -f
             cd ~
             rm -rf ~/foodgram-project-react
           fi
-          git clone git@github.com:maksim-moryakov/foodgram-project-react.git
+          git clone git@github.com:hrapovd1/foodgram-project-react.git
           cd foodgram-project-react
           cd infra
           echo POSTGRES_PASSWORD=${{ secrets.POSTGRES_PASS }} >> .env
@@ -52,7 +57,12 @@ jobs:
     - name: Notify
       uses: appleboy/ssh-action@master
       with:
-        to: ${{ secrets.TELEGRAM_TO }}
-        token: ${{ secrets.TELEGRAM_TOKEN }}
-        message: |
-            🚀 Запушил: ${{ github.actor }}        
+        host: ${{ secrets.HOST }}
+        username: ${{ secrets.USER }}
+        key: ${{ secrets.SSH_KEY }}
+        passphrase: ${{ secrets.SSH_PASSPHRASE }}
+        script: |
+          set +x
+          data="{\"chat_id\": \"${{ secrets.TELEGRAM_TO }}\", \"text\": \"${{ github.workflow }} успешно выполнен!\"}"
+          curl -X POST -H "Content-Type: application/json" -d "${data}" \
+          "https://api.telegram.org/bot${{ secrets.TELEGRAM_TOKEN }}/sendMessage"        
