@@ -27,12 +27,7 @@ jobs:
     - name: Lint with flake8
       run: |
         python3 -m flake8
-    - name: Build and upload docker image
-      run: |
-        cd backend
-        echo ${{ secrets.DOCKER_PASS }} | docker login -u ${{ secrets.DOCKER_USER }} --password-stdin
-        docker build . -t maksimmoryakov/foodgram_app:1.0
-        docker push maksimmoryakov/foodgram_app:1.0
+
     - name: Deploy
       uses: appleboy/ssh-action@master
       with:

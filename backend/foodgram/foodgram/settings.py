@@ -4,7 +4,7 @@ import os
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'e0f+vm*n^p%zj!i$60r889995p_@f6=aaarx_1^)65k!2(gb$y'
+SECRET_KEY = '7kv(becal9%#nn7+rkyviyn8#y$rv9mj%_h5ln_424_3_6s!sy'
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = False
