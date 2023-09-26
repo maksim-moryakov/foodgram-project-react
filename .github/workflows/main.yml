@@ -43,7 +43,7 @@ jobs:
       - name: Push backend to Docker Hub
         uses: docker/build-push-action@v4
         with:
-          context: backend/
+          context: infra/
           push: true
           tags: maksimmoryakov/foodgram_app:1.0
 
@@ -57,7 +57,7 @@ jobs:
           host: ${{ secrets.HOST }}
           username: ${{ secrets.USER }}
           key: ${{ secrets.SSH_KEY }}
-          passphrase: ${{ secrets.PASSPHRASE }}
+          passphrase: ${{ secrets.SSH_PASSPHRASE }}
           script: |
             cd infra
             sudo docker-compose down
