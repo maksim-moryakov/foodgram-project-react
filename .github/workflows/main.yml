@@ -1,5 +1,10 @@
 name: Main Foodgram
 
+on:
+  push:
+    branches:
+    - dev_2
+
 permissions:
   contents: read
 
