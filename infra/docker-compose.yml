@@ -38,7 +38,7 @@ services:
   db:
     image: postgres:13.10
     volumes:
-      - db_vol:/var/lib/postgresql/data/
+      - db_new_vol:/var/lib/postgresql/data/
     env_file:
       - ./.env
     restart: always
@@ -47,4 +47,4 @@ volumes:
   frontend_vol:
   static_vol:
   media_vol:
-  db_vol:
+  db_new_vol:

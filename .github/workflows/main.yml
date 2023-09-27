@@ -72,7 +72,7 @@ jobs:
             sudo docker compose -f docker-compose.yml exec app python manage.py makemigrations
             sudo docker compose -f docker-compose.yml exec app python manage.py migrate
             sudo docker compose -f docker-compose.yml exec app python manage.py collectstatic --no-input
-            sudo docker compose exec app python manage.py loaddata ingredients.json
+            sudo docker compose exec app python manage.py importcsv
 
   send_message:
     runs-on: ubuntu-latest
