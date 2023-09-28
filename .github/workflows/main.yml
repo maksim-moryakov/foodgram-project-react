@@ -13,9 +13,9 @@ jobs:
       postgres:
         image: postgres:13.10
         env:
-          POSTGRES_USER: django_user
-          POSTGRES_PASSWORD: django_password
-          DB_NAME: django_db
+          POSTGRES_USER: db_user
+          POSTGRES_PASSWORD: db_pass
+          DB_NAME: db_name
         ports:
           - 5432:5432
         options: --health-cmd pg_isready --health-interval 10s --health-timeout 5s --health-retries 5
@@ -37,7 +37,7 @@ jobs:
         POSTGRES_USER: db_user
         POSTGRES_PASSWORD: db_pass
         DB_NAME: db_name
-        DB_HOST: db_host
+        DB_HOST: dbhost
         DB_PORT: 5432
         SECRET_KEY: 'my_secret_key'
       run: |
