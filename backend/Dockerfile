@@ -4,9 +4,8 @@ WORKDIR /app
 
 COPY requirements.txt ./
 
-RUN pip3 install --upgrade pip \
-	&& pip3 install -r requirements.txt --no-cache-dir
+RUN pip install -r requirements.txt --no-cache-dir
 
-COPY foodgram/ ./
+COPY . .
 
-CMD [ "gunicorn", "foodgram.wsgi:application", "--bind", "0:8080" ]
+CMD [ "gunicorn", "foodgram.wsgi:application", "--bind", "0:8500" ]
