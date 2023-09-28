@@ -34,9 +34,9 @@ jobs:
         pip install -r ./backend/requirements.txt 
     - name: Test with flake8 and django tests
       env:
-        POSTGRES_USER: postgres
-        POSTGRES_PASSWORD: postgres
-        DB_NAME: postgres
+        POSTGRES_USER: pos
+        POSTGRES_PASSWORD: postg
+        DB_NAME: post
         DB_HOST: db_data
         DB_PORT: 5432
         SECRET_KEY: 'my_secret_key'
