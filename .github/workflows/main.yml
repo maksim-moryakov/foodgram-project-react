@@ -34,10 +34,10 @@ jobs:
         pip install -r ./backend/requirements.txt 
     - name: Test with flake8 and django tests
       env:
-        POSTGRES_USER: pos
-        POSTGRES_PASSWORD: postg
-        DB_NAME: post
-        DB_HOST: db_data
+        POSTGRES_USER: db_user
+        POSTGRES_PASSWORD: db_pass
+        DB_NAME: db_name
+        DB_HOST: db_host
         DB_PORT: 5432
         SECRET_KEY: 'my_secret_key'
       run: |
@@ -85,7 +85,7 @@ jobs:
         uses: actions/checkout@v3
       
       
-      - name: Copy docker-compose.yml via ssh
+      - name: Copy docker-compose.production.yml via ssh
         uses: appleboy/scp-action@master
         with:
           host: ${{ secrets.HOST }}
