@@ -3,7 +3,7 @@ services:
   db:
     image: postgres:13
     volumes:
-      - pg_data:/var/lib/postgresql/data/
+      - db_new_data:/var/lib/postgresql/data/
     env_file:
       - ../.env
     ports:
@@ -37,6 +37,6 @@ services:
       - media:/var/html/media/
 
 volumes:
-  pg_data:
+  db_new_data:
   static:
   media:

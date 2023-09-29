@@ -83,11 +83,11 @@ DJOSER = {
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
-        'NAME': os.getenv('DB_NAME', 'db_name'),
-        'USER': os.getenv('POSTGRES_USER', 'db_user'),
-        'PASSWORD': os.getenv('POSTGRES_PASSWORD', 'db_pass'),
-        'HOST': os.getenv('DB_HOST', 'db'),
-        'PORT': os.getenv('DB_PORT', '5432')
+        'NAME': os.getenv('DB_NAME', default='dbname'),
+        'USER': os.getenv('POSTGRES_USER', default='dbuser'),
+        'PASSWORD': os.getenv('POSTGRES_PASSWORD', default='dbpass'),
+        'HOST': os.getenv('DB_HOST', default='db'),
+        'PORT': os.getenv('DB_PORT', default='5432')
     }
 }
 
