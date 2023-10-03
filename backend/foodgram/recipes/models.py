@@ -1,3 +1,5 @@
+import re
+
 from django.contrib.auth.models import AbstractUser
 from django.core.exceptions import ValidationError
 from django.db import models
@@ -170,7 +172,7 @@ class ShoppingCart(models.Model):
 
     class Meta:
         models.UniqueConstraint(
-            fields=['user', 'recipe'],
+            fields=('user', 'recipe'),
             name='unique_shopping_cart'
         )
 
@@ -192,6 +194,6 @@ class Favorite(models.Model):
 
     class Meta:
         models.UniqueConstraint(
-            fields=['user', 'recipe'],
+            fields=('user', 'recipe'),
             name='unique_favorite'
         )
