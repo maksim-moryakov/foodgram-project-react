@@ -49,12 +49,12 @@ class Subscription(models.Model):
     )
 
     class Meta:
-        constraints = [ 
-            models.CheckConstraint( 
-                check=~(F('user') == F('author')), 
-                name='user_cannot_subscribe_to_self' 
-            ) 
-        ] 
+        constraints = [
+            models.CheckConstraint(
+                check=~(F('user') == F('author')),
+                name='user_cannot_subscribe_to_self'
+            )
+        ]
         verbose_name_plural = 'Подписки'
 
 
@@ -78,11 +78,11 @@ class RecipeIngredients(models.Model):
     )
     amount = models.PositiveSmallIntegerField()
 
-    def clean(self): 
-        if self.amount <= 0: 
-            raise ValidationError('Количество должно быть больше нуля') 
- 
-    def __str__(self): 
+    def clean(self):
+        if self.amount <= 0:
+            raise ValidationError('Количество должно быть больше нуля')
+
+    def __str__(self):
         return self.ingredient.name
 
 
@@ -95,8 +95,8 @@ class Tag(models.Model):
     class Meta:
         verbose_name_plural = 'Теги'
 
-    def clean(self): 
-        if not re.match('^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$', self.color): 
+    def clean(self):
+        if not re.match('^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$', self.color):
             raise ValidationError('Невалидный хекс-код цвета')
 
     def __str__(self):
@@ -144,12 +144,12 @@ class Recipe(models.Model):
         ordering = ('-created_at',)
         verbose_name_plural = 'Рецепты'
 
-    def clean(self): 
-        if self.cooking_time <= 0: 
-            raise ValidationError('Время приготовления должно быть больше 0') 
-        if self.cooking_time > 1440: 
-            raise ValidationError( 
-                'Время приготовления не может превышать 24 часа' 
+    def clean(self):
+        if self.cooking_time <= 0:
+            raise ValidationError('Время приготовления должно быть больше 0')
+        if self.cooking_time > 1440:
+            raise ValidationError(
+                'Время приготовления не может превышать 24 часа'
             )
 
     def __str__(self):
