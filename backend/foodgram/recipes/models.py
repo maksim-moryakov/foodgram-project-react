@@ -18,7 +18,7 @@ class User(AbstractUser):
     )
 
     class Meta:
-        ordering = ('username',)
+        ordering = ['username']
         verbose_name_plural = 'Пользователи'
 
     def __str__(self):
@@ -53,7 +53,7 @@ class Subscription(models.Model):
 
 class Ingredient(models.Model):
     """Модель для инградиентов."""
-    name = models.CharField('Название', max_length=100)
+    name = models.CharField(max_length=100, verbose_name='Название')
     measurement_unit = models.CharField(max_length=30, verbose_name='Ед. изм.')
 
     class Meta:
@@ -126,7 +126,7 @@ class Recipe(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
-        ordering = ('-created_at',)
+        ordering = ['-created_at']
         verbose_name_plural = 'Рецепты'
 
     def __str__(self):
@@ -149,7 +149,7 @@ class ShoppingCart(models.Model):
 
     class Meta:
         models.UniqueConstraint(
-            fields=('user', 'recipe'),
+            fields=['user', 'recipe'],
             name='unique_shopping_cart'
         )
 
@@ -171,6 +171,6 @@ class Favorite(models.Model):
 
     class Meta:
         models.UniqueConstraint(
-            fields=('user', 'recipe'),
+            fields=['user', 'recipe'],
             name='unique_favorite'
         )
