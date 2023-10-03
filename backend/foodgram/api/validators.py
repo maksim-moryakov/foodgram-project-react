@@ -13,12 +13,4 @@ def validate_username(value):
         raise ValidationError(
             'username не может быть me.'
         )
-    return value.strip()
-
-
-def validate_cooking_time(value):
-    if value > 0:
-        return value
-    raise ValidationError(
-        'Время приготовления должно быть больше 0'
-    )
+    return value

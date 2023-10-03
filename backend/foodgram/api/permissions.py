@@ -1,17 +1,21 @@
 from rest_framework import permissions
 
 
-class AuthenticatedOrReadOnlyPermission(permissions.BasePermission):
+class IsAuthenticatedOrReadOnly(permissions.BasePermission):
     """
     Полное разрешение для аутентифицированных пользователей,
     только чтение для остальных.
     """
     def has_permission(self, request, view):
-        return (request.method in permissions.SAFE_METHODS
-                or request.user.is_authenticated)
+        if (
+            request.method in permissions.SAFE_METHODS
+            or request.user.is_authenticated
+        ):
+            return True
+        return False
 
 
-class IsOwnerOrReadOnlyPermission(permissions.BasePermission):
+class IsAuthenticatedForDetail(permissions.BasePermission):
     """
     Разрешение на доступ к объектам для аутентифицированных
     пользователей.

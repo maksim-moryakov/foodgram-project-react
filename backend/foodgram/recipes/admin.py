@@ -1,13 +1,12 @@
 from django.contrib import admin
 from django.contrib.auth.models import Group
-from django.db import models
-from django.forms import TextInput
-from recipes.models import (Favorite, Ingredient, Recipe, Tag, User)
+
+from recipes.models import Favorite, Ingredient, Recipe, Tag, User
 
 
 @admin.register(User)
 class UserAdmin(admin.ModelAdmin):
-    """Класс представления модели пользователей."""
+    """Класс представления модели пользователей"""
     list_display = (
         'email', 'id', 'username',
         'first_name', 'last_name', 'role'
@@ -32,16 +31,10 @@ class RecipeAdmin(admin.ModelAdmin):
 
 @admin.register(Ingredient)
 class IngredientAdmin(admin.ModelAdmin):
-    """Класс представление инградиентов."""
+    """Класс представления инградиентов"""
     list_display = ('name', 'measurement_unit')
     search_fields = ('^name',)
 
 
-class TagAdmin(admin.ModelAdmin):
-    formfield_overrides = {
-        models.CharField: {'widget': TextInput(attrs={'type': 'color'})},
-    }
-
-
 admin.site.unregister(Group)
-admin.site.register(Tag, TagAdmin)
+admin.site.register(Tag)
