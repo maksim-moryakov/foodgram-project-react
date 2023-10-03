@@ -187,16 +187,18 @@ class RecipeWriteSerializer(serializers.ModelSerializer):
     image = Base64ImageField()
 
     @transaction.atomic
-    def create(self, validated_data):
-        tags = validated_data.pop('tags')
-        ingredients = validated_data.pop('ingredients')
-        recipe = Recipe.objects.create(
-            author=self.context['request'].user,
-            **validated_data,
-        )
-        recipe.tags.set(tags)
-        recipe.ingredients.set(ingredients)
-        return recipe
+    def update(self, instance, validated_data):
+        with transaction.atomic():
+            tags = validated_data.pop('tags', None)
+            ingredients = validated_data.pop('ingredients', None)
+            for key, value in validated_data.items():
+                setattr(instance, key, value)
+            if tags is not None:
+                instance.tags.set(tags)
+            if ingredients is not None:
+                instance.ingredients.set(ingredients)
+            instance.save()
+        return instance
 
     def to_representation(self, instance):
         return RecipeGetSerializer(
