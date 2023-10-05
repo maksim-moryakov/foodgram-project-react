@@ -68,4 +68,3 @@ class RecipeFilter(FilterSet):
         if shop_cart == '1':
             return queryset
         return self.filter_tags(queryset)
-
