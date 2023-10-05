@@ -1,4 +1,4 @@
-from api.validators import validate_username
+from api.validators import validate_cooking_time, validate_username
 from django.core.exceptions import ObjectDoesNotExist
 from django.db import transaction
 from drf_extra_fields.fields import Base64ImageField
@@ -185,20 +185,21 @@ class RecipeWriteSerializer(serializers.ModelSerializer):
     )
     author = UserSerializer(required=False)
     image = Base64ImageField()
+    cooking_time = serializers.IntegerField(
+        validators=[validate_cooking_time]
+    )
 
     @transaction.atomic
-    def update(self, instance, validated_data):
-        with transaction.atomic():
-            tags = validated_data.pop('tags', None)
-            ingredients = validated_data.pop('ingredients', None)
-            for key, value in validated_data.items():
-                setattr(instance, key, value)
-            if tags is not None:
-                instance.tags.set(tags)
-            if ingredients is not None:
-                instance.ingredients.set(ingredients)
-            instance.save()
-        return instance
+    def create(self, validated_data):
+        tags = validated_data.pop('tags')
+        ingredients = validated_data.pop('ingredients')
+        recipe = Recipe.objects.create(
+            author=self.context['request'].user,
+            **validated_data,
+        )
+        recipe.tags.set(tags)
+        recipe.ingredients.set(ingredients)
+        return recipe
 
     def to_representation(self, instance):
         return RecipeGetSerializer(

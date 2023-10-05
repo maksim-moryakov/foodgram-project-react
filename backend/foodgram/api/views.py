@@ -1,6 +1,6 @@
 from csv import writer
 
-from api.filters import RecipeQueryFilter
+from api.filters import RecipeFilter
 from api.permissions import IsAuthenticatedForDetail, IsAuthenticatedOrReadOnly
 from api.serializers import (FavoriteShoppingCartSerializer,
                              IngredientGetSerializer, PasswordSerializer,
@@ -12,6 +12,7 @@ from django.db import IntegrityError
 from django.db.models import Count, Sum
 from django.http import HttpResponse
 from django.shortcuts import get_object_or_404
+from django_filters.rest_framework import DjangoFilterBackend
 from djoser.views import TokenCreateView, TokenDestroyView
 from recipes.models import (Favorite, Ingredient, Recipe, ShoppingCart,
                             Subscription, Tag, User)
@@ -220,7 +221,8 @@ class IngredientViewSet(ListRetrieveViewSet):
 class RecipeViewSet(viewsets.ModelViewSet):
     """ViewSet для рецептов."""
     queryset = Recipe.objects.all()
-    filter_backends = [RecipeQueryFilter]
+    filter_backends = [DjangoFilterBackend]
+    filterset_class = RecipeFilter
     permission_classes = [IsAuthenticatedOrReadOnly]
     lookup_field = 'id'
 
