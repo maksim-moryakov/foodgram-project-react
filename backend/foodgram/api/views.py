@@ -1,17 +1,8 @@
-from csv import writer
-
-from api.filters import RecipeQueryFilter
-from api.permissions import IsAuthenticatedForDetail, IsAuthenticatedOrReadOnly
-from api.serializers import (FavoriteShoppingCartSerializer,
-                             IngredientGetSerializer, PasswordSerializer,
-                             RecipeGetSerializer, RecipeWriteSerializer,
-                             SubscribeSerializer, TagSerializer,
-                             UserSerializer)
 from django.core.exceptions import ObjectDoesNotExist
-from django.db import IntegrityError
 from django.db.models import Count, Sum
 from django.http import HttpResponse
 from django.shortcuts import get_object_or_404
+from django_filters.rest_framework import DjangoFilterBackend
 from djoser.views import TokenCreateView, TokenDestroyView
 from recipes.models import (Favorite, Ingredient, Recipe, ShoppingCart,
                             Subscription, Tag, User)
@@ -20,6 +11,16 @@ from rest_framework.decorators import action
 from rest_framework.mixins import ListModelMixin, RetrieveModelMixin
 from rest_framework.response import Response
 from rest_framework.viewsets import GenericViewSet
+
+from api.filters import RecipeFilter
+from api.permissions import IsAuthenticatedForDetail, IsAuthenticatedOrReadOnly
+from api.serializers import (FavoriteShoppingCartSerializer,
+                             IngredientGetSerializer, PasswordSerializer,
+                             RecipeGetSerializer, RecipeWriteSerializer,
+                             SubscribeSerializer, TagSerializer,
+                             UserSerializer)
+
+from csv import writer
 
 
 class UserViewSet(viewsets.ModelViewSet):
@@ -39,7 +40,7 @@ class UserViewSet(viewsets.ModelViewSet):
             or self.queryset.filter(username=username).exists()
         ):
             return Response(
-                {'Такой email существует.'},
+                "Такой email уже существует.",
                 status=status.HTTP_400_BAD_REQUEST
             )
         self.perform_create(serializer)
@@ -108,18 +109,10 @@ class UserViewSet(viewsets.ModelViewSet):
         if self.request.method == 'POST':
             if Subscription.objects.filter(user=user, author=author).exists():
                 return Response(
-                    "Попытка повторного добавления",
+                    "Подписка уже существует",
                     status=status.HTTP_400_BAD_REQUEST,
                 )
-            try:
-                Subscription.objects.create(user=user, author=author)
-            except IntegrityError as err:
-                if 'unique constraint' in err.args:
-                    return Response(
-                        "Попытка повторного добавления",
-                        status=status.HTTP_400_BAD_REQUEST,
-                    )
-
+            Subscription.objects.create(user=user, author=author)
             serializer = UserSerializer(
                 author,
                 context={'request': request})
@@ -133,7 +126,7 @@ class UserViewSet(viewsets.ModelViewSet):
             )
         except ObjectDoesNotExist:
             return Response(
-                "Попытка не существующего удаления",
+                "Подписка не существует.",
                 status=status.HTTP_400_BAD_REQUEST,
             )
         author.delete()
@@ -220,7 +213,8 @@ class IngredientViewSet(ListRetrieveViewSet):
 class RecipeViewSet(viewsets.ModelViewSet):
     """ViewSet для рецептов."""
     queryset = Recipe.objects.all()
-    filter_backends = [RecipeQueryFilter]
+    filter_backends = [DjangoFilterBackend]
+    filterset_class = RecipeFilter
     permission_classes = [IsAuthenticatedOrReadOnly]
     lookup_field = 'id'
 
@@ -251,18 +245,10 @@ class RecipeViewSet(viewsets.ModelViewSet):
         if self.request.method == 'POST':
             if ShoppingCart.objects.filter(user=user, recipe=recipe).exists():
                 return Response(
-                    "Попытка повторного добавления",
+                    "Рецепт уже добавлен в корзину.",
                     status=status.HTTP_400_BAD_REQUEST,
                 )
-            try:
-                ShoppingCart.objects.create(user=user, recipe=recipe)
-            except IntegrityError as err:
-                if 'unique constraint' in err.args:
-                    return Response(
-                        "Попытка повторного добавления",
-                        status=status.HTTP_400_BAD_REQUEST,
-                    )
-
+            ShoppingCart.objects.create(user=user, recipe=recipe)
             serializer = FavoriteShoppingCartSerializer(recipe)
             return Response(
                 serializer.data,
@@ -274,7 +260,7 @@ class RecipeViewSet(viewsets.ModelViewSet):
             )
         except ObjectDoesNotExist:
             return Response(
-                "Попытка не существующего удаления",
+                "Рецепта нет в корзине.",
                 status=status.HTTP_400_BAD_REQUEST,
             )
         recipe_in_cart.delete()
@@ -292,18 +278,10 @@ class RecipeViewSet(viewsets.ModelViewSet):
         if self.request.method == 'POST':
             if Favorite.objects.filter(user=user, recipe=recipe).exists():
                 return Response(
-                    "Попытка повторного добавления",
+                    "Рецепт уже добавлен в избранное.",
                     status=status.HTTP_400_BAD_REQUEST,
                 )
-            try:
-                Favorite.objects.create(user=user, recipe=recipe)
-            except IntegrityError as err:
-                if 'unique constraint' in err.args:
-                    return Response(
-                        "Попытка повторного добавления",
-                        status=status.HTTP_400_BAD_REQUEST,
-                    )
-
+            Favorite.objects.create(user=user, recipe=recipe)
             serializer = FavoriteShoppingCartSerializer(recipe)
             return Response(
                 serializer.data,
@@ -315,7 +293,7 @@ class RecipeViewSet(viewsets.ModelViewSet):
             )
         except ObjectDoesNotExist:
             return Response(
-                "Попытка не существующего удаления",
+                "Рецепта нет в избранном.",
                 status=status.HTTP_400_BAD_REQUEST,
             )
         favorite.delete()
